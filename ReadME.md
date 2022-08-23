@@ -4,7 +4,9 @@ pdb代理服务器，用于加速符号（msdl.microsoft.com）下载，同时�
 
 # 配置说明
 server_port  监听端口
+
 pdb_dir      缓存pdb的目录
+
 pdb_server   远端pdb服务器
 
 # 可用节点
