@@ -17,6 +17,8 @@ https://msdl.szdyg.icu/download/symbols
 
 [测试下载](http://msdl.szdyg.icu/download/symbols/wrpcrt4.pdb/0DBDD41E0805EAAB4F3FE2365B9EC7A91/wrpcrt4.pdb)
 
+[一键配置工具](https://github.com/szdyg/pdb_config_tool)
+
 # other
 
 如果不需要缓存pdb到本地，推荐直接使用nginx反向代理加速。
