@@ -15,7 +15,7 @@ http://msdl.szdyg.icu/download/symbols
 
 https://msdl.szdyg.icu/download/symbols
 
-[测试下载](http://msdl.szdyg.icu/download/symbols/wrpcrt4.pdb/0DBDD41E0805EAAB4F3FE2365B9EC7A91/wrpcrt4.pdb)
+[节点测试下载](http://msdl.szdyg.icu/download/symbols/wrpcrt4.pdb/0DBDD41E0805EAAB4F3FE2365B9EC7A91/wrpcrt4.pdb)
 
 [一键配置工具](https://github.com/szdyg/pdb_config_tool)
 
