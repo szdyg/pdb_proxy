@@ -2,6 +2,7 @@ package pdb
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -10,15 +11,19 @@ import (
 
 func DownLoadFile(url string, filepath string) error {
 
-	os.Remove(filepath)
-	dir := path.Dir(filepath)
-	os.MkdirAll(dir, 0644)
-
 	res, err := http.Get(url)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode == 404 {
+		return errors.New("file not exist")
+	}
+
+	os.Remove(filepath)
+	dir := path.Dir(filepath)
+	os.MkdirAll(dir, 0644)
 
 	file, err := os.Create(filepath)
 	if err != nil {
