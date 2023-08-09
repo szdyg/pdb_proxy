@@ -1,0 +1,19 @@
+version: "3"
+
+networks:
+  pdb_proxy:
+    external: false
+
+services:
+  server:
+    image: szdyg/pdb_proxy
+    environment:
+      - TIME_ZONE=Asia/Shanghai
+    restart: always
+    networks:
+      - pdb_proxy
+    volumes:
+      - ./pdb:/pdb
+
+    ports:
+      - "9000:9000"
