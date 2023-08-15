@@ -20,7 +20,7 @@ func PdbQuery(c *gin.Context) {
 		err := DownLoadFile(pdbUrl, pdbPath)
 		if err != nil {
 			os.Remove(pdbPath)
-			c.String(500, "download pdb err")
+			c.String(404, "pdb not exist")
 		} else {
 			c.File(pdbPath)
 		}
