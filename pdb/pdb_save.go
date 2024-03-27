@@ -17,7 +17,7 @@ func DownLoadFile(url string, filepath string) error {
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode == 404 {
+	if res.StatusCode != 200 {
 		return errors.New("file not exist")
 	}
 
