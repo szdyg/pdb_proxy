@@ -18,7 +18,6 @@ FROM scratch as runner
 COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /usr/src/app/server /opt/app/
-COPY --from=builder /usr/src/app/pdb_proxy.ini /opt/app/
 
 ENV PDB_DIR=/pdb
 ENV PDB_SERVER=https://msdl.microsoft.com/download/symbols
