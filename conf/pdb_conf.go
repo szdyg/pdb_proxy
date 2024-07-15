@@ -1,6 +1,8 @@
 package conf
 
-import "gopkg.in/ini.v1"
+import (
+	"os"
+)
 
 var (
 	PdbDir     string
@@ -9,11 +11,17 @@ var (
 )
 
 func init() {
-	cfg, err := ini.Load("pdb_proxy.ini")
-	if err != nil {
-		panic("read pdb_proxy.ini error")
+
+	PdbDir = GetStrEnvWithDefault("PDB_DIR", "/pdb")
+	PdbServer = GetStrEnvWithDefault("PDB_SERVER", "https://msdl.microsoft.com/download/symbols")
+	ServerPort = GetStrEnvWithDefault("SERVER_PORT", "0.0.0.0:9000")
+}
+
+// GetStrEnvWithDefault 获取字符串环境变量，如果未设置则返回默认值
+func GetStrEnvWithDefault(key string, defaultValue string) string {
+	val, exists := os.LookupEnv(key)
+	if !exists {
+		return defaultValue
 	}
-	PdbDir = cfg.Section("").Key("pdb_dir").String()
-	PdbServer = cfg.Section("").Key("pdb_server").String()
-	ServerPort = cfg.Section("").Key("server_port").String()
+	return val
 }

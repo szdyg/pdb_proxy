@@ -14,8 +14,16 @@ RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o server
 
 
 FROM scratch as runner
+
 COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /usr/src/app/server /opt/app/
 COPY --from=builder /usr/src/app/pdb_proxy.ini /opt/app/
+
+ENV PDB_DIR=/pdb
+ENV PDB_SERVER=https://msdl.microsoft.com/download/symbols
+ENV SERVER_PORT=0.0.0.0:9000
+
+EXPOSE 9000
+
 CMD ["/opt/app/server"]
