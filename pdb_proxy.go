@@ -19,6 +19,8 @@ func PassBy(c *gin.Context) {
 }
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
+
 	r := gin.Default()
 	r.GET("/download/symbols/:pdbname/:pdbhash/:pdbname", pdb.PdbQuery)
 	r.Run(conf.ServerPort)
