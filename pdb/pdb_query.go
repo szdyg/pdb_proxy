@@ -2,6 +2,7 @@ package pdb
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"os"
 	"path"
 	"pdb_proxy/conf"
@@ -12,6 +13,8 @@ func PdbQuery(c *gin.Context) {
 	pdbHash := c.Param("pdbhash")
 	pdbQuery := pdbName + "/" + pdbHash + "/" + pdbName
 	pdbPath := path.Join(conf.PdbDir, pdbQuery)
+	log.Printf("Pdb Path: %s", pdbPath)
+
 	_, err := os.Stat(pdbPath)
 	if err == nil {
 		c.File(pdbPath)
