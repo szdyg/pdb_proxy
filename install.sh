@@ -123,3 +123,7 @@ cd /
 rm -rf "$TMP_DIR"
 
 echo "安装完成！PDB Proxy 服务已启动并设置为开机自启动。"
+
+echo "启动： systemctl start pdb-proxy"
+echo "停止： systemctl stop pdb-proxy"
+echo "重启： systemctl restart pdb-proxy"
