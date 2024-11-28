@@ -1,5 +1,13 @@
 # pdb_proxy
 
+## linux 自动部署脚本
+
+执行后自动下载配置systemd服务，开机自启动 监听9000端口
+
+```shell 
+curl -o- https://raw.githubusercontent.com/luodaoyi/pdb_proxy/master/install.sh | bash
+```
+
 pdb代理服务器，用于加速符号（msdl.microsoft.com）下载，同时可以保留一份符号表存在本地，作为节点提供服务。
 
 # 配置说明
