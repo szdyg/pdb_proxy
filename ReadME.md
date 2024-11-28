@@ -5,7 +5,12 @@
 执行后自动下载配置systemd服务，开机自启动 监听9000端口
 
 ```shell 
+# 安装/更新
 curl -o- https://raw.githubusercontent.com/luodaoyi/pdb_proxy/master/install.sh | bash
+
+#卸载
+curl -o- https://raw.githubusercontent.com/luodaoyi/pdb_proxy/master/uninstall.sh | bash
+
 
 #启动： 
 systemctl start pdb-proxy

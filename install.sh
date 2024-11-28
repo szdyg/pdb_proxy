@@ -38,6 +38,15 @@ case $ARCH in
         ;;
 esac
 
+# 检查是否为更新操作
+IS_UPDATE=false
+if [ -f /usr/bin/pdb-proxy ]; then
+    IS_UPDATE=true
+    echo "检测到已安装的 PDB Proxy，将进行更新..."
+    # 停止服务
+    systemctl stop pdb-proxy
+fi
+
 # 创建临时目录
 TMP_DIR=$(mktemp -d)
 cd $TMP_DIR || exit 1
@@ -108,12 +117,19 @@ StandardError=journal
 WantedBy=multi-user.target
 EOF
 
-# 重新加载systemd配置
+# 重新加载 systemd 配置
 systemctl daemon-reload
 
-# 启用并启动服务
-systemctl enable pdb-proxy
-systemctl start pdb-proxy
+if [ "$IS_UPDATE" = true ]; then
+    # 启动服务
+    systemctl start pdb-proxy
+    echo "更新完成！PDB Proxy 服务已重新启动。"
+else
+    # 启用并启动服务
+    systemctl enable pdb-proxy
+    systemctl start pdb-proxy
+    echo "安装完成！PDB Proxy 服务已启动并设置为开机自启动。"
+fi
 
 # 检查服务状态
 systemctl status pdb-proxy
@@ -121,9 +137,3 @@ systemctl status pdb-proxy
 # 清理临时目录
 cd /
 rm -rf "$TMP_DIR"
-
-echo "安装完成！PDB Proxy 服务已启动并设置为开机自启动。"
-
-echo "启动： systemctl start pdb-proxy"
-echo "停止： systemctl stop pdb-proxy"
-echo "重启： systemctl restart pdb-proxy"
