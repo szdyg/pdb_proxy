@@ -9,6 +9,7 @@ services:
     image: szdyg/pdb_proxy
     environment:
       - TIME_ZONE=Asia/Shanghai
+      - PDB_SERVER=https://msdl.microsoft.com/download/symbols
     restart: always
     networks:
       - pdb_proxy
