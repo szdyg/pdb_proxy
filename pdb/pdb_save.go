@@ -11,6 +11,8 @@ import (
 
 func DownLoadFile(url string, filepath string) error {
 
+	//log.Printf("Download file from %s to %s", url, filepath)
+
 	res, err := http.Get(url)
 	if err != nil {
 		return err
