@@ -29,6 +29,20 @@ pdb_dir      缓存pdb的目录
 
 pdb_server   远端pdb服务器
 
+pdb_cache_ttl  缓存有效期，对应环境变量 `PDB_CACHE_TTL`，使用 Go duration 格式，例如 `1h`、`30m`；设置为 `0` 表示永久缓存，默认 `1h`
+
+例如 Docker Compose 使用永久缓存：
+
+```shell
+PDB_CACHE_TTL=0 docker compose up -d
+```
+
+Linux 安装脚本也可以直接指定：
+
+```shell
+PDB_CACHE_TTL=24h bash install.sh
+```
+
 # 可用节点
 
 http://msdl.szdyg.cn/download/symbols

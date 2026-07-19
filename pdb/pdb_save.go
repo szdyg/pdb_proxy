@@ -1,15 +1,14 @@
 package pdb
 
 import (
-	"bufio"
 	"errors"
 	"io"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 )
 
-func DownLoadFile(url string, filepath string) error {
+func DownLoadFile(url string, filePath string) error {
 
 	//log.Printf("Download file from %s to %s", url, filepath)
 
@@ -23,25 +22,24 @@ func DownLoadFile(url string, filepath string) error {
 		return errors.New("file not exist")
 	}
 
-	os.Remove(filepath)
-	dir := path.Dir(filepath)
-	os.MkdirAll(dir, 0644)
-
-	file, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	buf := bufio.NewWriter(file)
-	_, err = io.Copy(buf, res.Body)
-	if err != nil {
-		return err
-	}
-	err = buf.Flush()
-	if err != nil {
+	dir := filepath.Dir(filePath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
 
-	return nil
+	file, err := os.CreateTemp(dir, ".pdb-download-*")
+	if err != nil {
+		return err
+	}
+	tempPath := file.Name()
+	defer os.Remove(tempPath)
+
+	if _, err = io.Copy(file, res.Body); err != nil {
+		file.Close()
+		return err
+	}
+	if err = file.Close(); err != nil {
+		return err
+	}
+	return replaceCachedFile(tempPath, filePath)
 }

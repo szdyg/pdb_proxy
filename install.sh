@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 # 检查是否为root用户
 if [ "$EUID" -ne 0 ]; then
@@ -23,6 +23,45 @@ if ! command -v jq &> /dev/null; then
     fi
 fi
 
+# 检查基础工具
+if ! command -v curl &> /dev/null; then
+    echo "未找到 curl，请先安装后重试"
+    exit 1
+fi
+if ! command -v tar &> /dev/null; then
+    echo "未找到 tar，请先安装后重试"
+    exit 1
+fi
+if ! command -v systemctl &> /dev/null; then
+    echo "未找到 systemctl，无法安装 systemd 服务"
+    exit 1
+fi
+
+# 交互设置端口
+DEFAULT_PORT="9000"
+INPUT_PORT=""
+if ! read -r -p "请输入监听端口(默认${DEFAULT_PORT}): " INPUT_PORT; then
+    INPUT_PORT=""
+fi
+INPUT_PORT=$(echo "$INPUT_PORT" | tr -d '[:space:]')
+if [ -z "$INPUT_PORT" ]; then
+    PORT="$DEFAULT_PORT"
+elif [[ "$INPUT_PORT" =~ ^[0-9]+$ ]] && [ "$INPUT_PORT" -ge 1 ] && [ "$INPUT_PORT" -le 65535 ]; then
+    PORT="$INPUT_PORT"
+else
+    echo "端口不合法，使用默认端口 ${DEFAULT_PORT}"
+    PORT="$DEFAULT_PORT"
+fi
+
+# 默认配置
+PDB_DIR="/opt/pdb"
+PDB_SERVER="https://msdl.microsoft.com/download/symbols"
+PDB_CACHE_TTL="${PDB_CACHE_TTL:-1h}"
+SERVER_PORT="0.0.0.0:${PORT}"
+
+# 确保缓存目录存在
+mkdir -p "$PDB_DIR"
+
 # 获取系统架构
 ARCH=$(uname -m)
 case $ARCH in
@@ -44,28 +83,43 @@ if [ -f /usr/bin/pdb-proxy ]; then
     IS_UPDATE=true
     echo "检测到已安装的 PDB Proxy，将进行更新..."
     # 停止服务
-    systemctl stop pdb-proxy
+    if systemctl is-active --quiet pdb-proxy; then
+        systemctl stop pdb-proxy
+    fi
 fi
 
 # 创建临时目录
-TMP_DIR=$(mktemp -d)
-cd $TMP_DIR || exit 1
+TMP_DIR=$(mktemp -d -t pdb-proxy.XXXXXX)
+cleanup_tmp_dir() {
+    if [ -n "${TMP_DIR:-}" ] && [ -d "$TMP_DIR" ]; then
+        case "$TMP_DIR" in
+            /tmp/pdb-proxy.*|/var/tmp/pdb-proxy.*)
+                rm -rf -- "$TMP_DIR"
+                ;;
+            *)
+                echo "警告：临时目录路径异常，跳过清理：$TMP_DIR"
+                ;;
+        esac
+    fi
+}
+trap cleanup_tmp_dir EXIT
+cd "$TMP_DIR" || exit 1
 
 # 获取最新版本信息
 echo "正在获取最新版本信息..."
-LATEST_RELEASE=$(curl -s https://api.github.com/repos/luodaoyi/pdb_proxy/releases/latest)
-if [ $? -ne 0 ]; then
-    echo "获取版本信息失败"
-    exit 1
-fi
+LATEST_RELEASE=$(curl -fsSL https://api.github.com/repos/luodaoyi/pdb_proxy/releases/latest)
 
 # 解析版本号
-VERSION=$(echo $LATEST_RELEASE | grep -o '"tag_name": "[^"]*' | cut -d'"' -f4)
+VERSION=$(echo "$LATEST_RELEASE" | jq -r '.tag_name // empty')
+if [ -z "$VERSION" ]; then
+    echo "解析版本号失败，请稍后重试或检查网络"
+    exit 1
+fi
 echo "最新版本: $VERSION"
 
 # 查找匹配当前架构的资源
 echo "正在解析下载链接..."
-ASSET_URL=$(echo $LATEST_RELEASE | jq -r ".assets[] | select(.name | contains(\"linux-${ARCH_NAME}\") and contains(\".tar.gz\") and (contains(\".md5\") | not)) | .browser_download_url")
+ASSET_URL=$(echo "$LATEST_RELEASE" | jq -r ".assets[] | select(.name | contains(\"linux-${ARCH_NAME}\") and contains(\".tar.gz\") and (contains(\".md5\") | not)) | .browser_download_url")
 
 # 打印调试信息
 echo "解析到的下载链接: $ASSET_URL"
@@ -80,11 +134,7 @@ fi
 # 下载压缩文件
 echo "正在下载 linux-${ARCH_NAME} 版本..."
 echo "下载链接: $ASSET_URL"
-curl -L -o pdb-proxy.tar.gz "$ASSET_URL"
-if [ $? -ne 0 ]; then
-    echo "下载失败"
-    exit 1
-fi
+curl -fL -o pdb-proxy.tar.gz "$ASSET_URL"
 
 # 解压文件
 echo "正在解压文件..."
@@ -107,6 +157,10 @@ After=network.target
 
 [Service]
 Type=simple
+Environment="PDB_DIR=${PDB_DIR}"
+Environment="PDB_SERVER=${PDB_SERVER}"
+Environment="PDB_CACHE_TTL=${PDB_CACHE_TTL}"
+Environment="SERVER_PORT=${SERVER_PORT}"
 ExecStart=/usr/bin/pdb-proxy
 Restart=always
 RestartSec=10
@@ -132,8 +186,6 @@ else
 fi
 
 # 检查服务状态
-systemctl status pdb-proxy
-
-# 清理临时目录
-cd /
-rm -rf "$TMP_DIR"
+if ! systemctl --no-pager --full status pdb-proxy; then
+    echo "服务状态检查失败，请手动执行：systemctl status pdb-proxy"
+fi
