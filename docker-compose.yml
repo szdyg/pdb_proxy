@@ -1,5 +1,3 @@
-version: "3"
-
 networks:
   pdb_proxy:
     external: false
@@ -8,8 +6,10 @@ services:
   server:
     image: szdyg/pdb_proxy
     environment:
-      - TIME_ZONE=Asia/Shanghai
       - PDB_SERVER=https://msdl.microsoft.com/download/symbols
+      # 以下两项一般不用改：容器内路径靠 volumes 映射到宿主机
+      # - PDB_DIR=/pdb
+      # - SERVER_PORT=0.0.0.0:9000
     restart: always
     networks:
       - pdb_proxy

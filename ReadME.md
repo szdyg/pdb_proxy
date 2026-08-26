@@ -1,33 +1,37 @@
 # pdb_proxy
 
-## linux 自动部署脚本
-
-执行后自动下载配置systemd服务，开机自启动 监听9000端口
-
-```shell 
-# 安装/更新
-curl -o- https://raw.githubusercontent.com/luodaoyi/pdb_proxy/master/install.sh | bash
-
-#卸载
-curl -o- https://raw.githubusercontent.com/luodaoyi/pdb_proxy/master/uninstall.sh | bash
-
-
-#启动： 
-systemctl start pdb-proxy
-#停止： 
-systemctl stop pdb-proxy
-#重启： 
-systemctl restart pdb-proxy
-```
-
 pdb代理服务器，用于加速符号（msdl.microsoft.com）下载，同时可以保留一份符号表存在本地，作为节点提供服务。
 
+# 部署
+
+```shell
+git clone https://github.com/szdyg/pdb_proxy.git
+cd pdb_proxy
+
+# 启动
+docker compose up -d
+
+# 停止
+docker compose down
+
+# 更新到最新镜像
+docker compose pull && docker compose up -d
+
+# 查看日志
+docker compose logs -f
+```
+
+默认监听 9000 端口，符号缓存在当前目录下的 `./pdb`。
+
 # 配置说明
-server_port  监听端口
 
-pdb_dir      缓存pdb的目录
+通过环境变量配置，在 `docker-compose.yml` 的 `environment` 中设置：
 
-pdb_server   远端pdb服务器
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `SERVER_PORT` | `0.0.0.0:9000` | 监听地址和端口 |
+| `PDB_DIR` | `/pdb` | 缓存pdb的目录（容器内路径，通过 `volumes` 映射到宿主机） |
+| `PDB_SERVER` | `https://msdl.microsoft.com/download/symbols` | 远端pdb服务器 |
 
 # 可用节点
 
@@ -44,5 +48,3 @@ https://msdl.szdyg.cn/download/symbols
 如果不需要缓存pdb到本地，推荐直接使用nginx反向代理加速。
 
 参考：https://blog.sunflyer.cn/archives/848
-
-
