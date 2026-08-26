@@ -2,6 +2,7 @@ package conf
 
 import (
 	"os"
+	"strings"
 )
 
 var (
@@ -13,7 +14,8 @@ var (
 func init() {
 
 	PdbDir = GetStrEnvWithDefault("PDB_DIR", "/pdb")
-	PdbServer = GetStrEnvWithDefault("PDB_SERVER", "https://msdl.microsoft.com/download/symbols")
+	// 去掉尾部斜杠，避免拼接时产生 //
+	PdbServer = strings.TrimRight(GetStrEnvWithDefault("PDB_SERVER", "https://msdl.microsoft.com/download/symbols"), "/")
 	ServerPort = GetStrEnvWithDefault("SERVER_PORT", "0.0.0.0:9000")
 }
 

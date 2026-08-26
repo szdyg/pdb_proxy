@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/gin-gonic/gin v1.10.0
-	gopkg.in/ini.v1 v1.67.0
+	golang.org/x/sync v0.7.0
 )
 
 require (
