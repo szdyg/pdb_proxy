@@ -1,5 +1,5 @@
-FROM golang:1.22-alpine as builder
-MAINTAINER szdyg "szdyg@outlook.com"
+FROM golang:1.22-alpine AS builder
+LABEL maintainer="szdyg <szdyg@outlook.com>"
 
 WORKDIR /usr/src/app
 
@@ -13,7 +13,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o server
 
 
-FROM scratch as runner
+FROM scratch AS runner
 
 COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
